@@ -6,7 +6,7 @@ public class App {
 
     private static int portNumber = 8080;
     private static PrintStream logStream;
-    private static boolean logToTextFile = false;
+    private static boolean logToTextFile = true;
 
     public static void main(String[] args) {
 
@@ -40,7 +40,7 @@ public class App {
 
     private static void addShutdownHook(PrintStream logStream) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (logStream != System.out) {
+            if (logToTextFile && logStream != null && logStream != System.out) {
                 logStream.close();
             }
         }));
