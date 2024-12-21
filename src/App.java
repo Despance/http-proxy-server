@@ -2,13 +2,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
-import proxy.HttpProxy;
+import proxy.ProxyServer;
 
 public class App {
 
     private static int portNumber = 8080;
     private static PrintStream logStream;
     private static boolean logToTextFile = true;
+
+    private static int cacheSize = 10;
 
     public static void main(String[] args) {
 
@@ -38,7 +40,7 @@ public class App {
         Thread serverThread = new Thread(server);
         serverThread.start();
 
-        HttpProxy proxy = new HttpProxy(8888, logStream);
+        ProxyServer proxy = new ProxyServer(8888, logStream, cacheSize);
         Thread proxyThread = new Thread(proxy);
         proxyThread.start();
 
