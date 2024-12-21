@@ -6,7 +6,7 @@
 /bin
 /lib
 /out
-/cache
+/src/cache
 # Log file
 *.log
 
