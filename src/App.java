@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 
+import proxy.HttpProxy;
+
 public class App {
 
     private static int portNumber = 8080;
@@ -35,6 +37,10 @@ public class App {
         HttpServer server = new HttpServer(portNumber, logStream);
         Thread serverThread = new Thread(server);
         serverThread.start();
+
+        HttpProxy proxy = new HttpProxy(8888, logStream);
+        Thread proxyThread = new Thread(proxy);
+        proxyThread.start();
 
     }
 

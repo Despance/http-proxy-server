@@ -4,7 +4,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
-public class HttpProxy {
+public class HttpProxy implements Runnable {
     
     private boolean isRunning = false;
     private int portNumber;
