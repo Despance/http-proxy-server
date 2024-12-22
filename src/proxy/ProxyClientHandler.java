@@ -42,18 +42,24 @@ class ProxyClientHandler implements Runnable {
             }
 
             String uri = requestParts[1];
-            URL url = new URL(uri);
-            String host = url.getHost();
-            int port = (url.getPort() == -1) ? 80 : url.getPort();
-            String path = url.getPath();
+            String host = "localhost";
+            int port = 8080;
+            String path = uri;
 
-            if (path.startsWith("/")) {
-                path = path.substring(1);
+            if (uri.startsWith("http://")) {
+                URL url = new URL(uri);
+                host = url.getHost();
+                port = (url.getPort() == -1) ? (host.equals("localhost") ? 8080 : 80) : url.getPort();
+                path = url.getPath();
+            }
+
+            if (!path.startsWith("/")) {
+                path = "/" + path;
             }
 
             int size;
             try {
-                size = Integer.parseInt(path);
+                size = Integer.parseInt(path.substring(1));
                 if (size > MAX_URI_SIZE) {
                     sendError(clientOutput, 414, "Request-URI Too Long");
                     return;
@@ -63,9 +69,10 @@ class ProxyClientHandler implements Runnable {
                 return;
             }
 
-            if (cache.containsKey(uri)) {
-                logStream.println("Cache hit for URI: " + uri);
-                File cachedFile = cache.get(uri);
+            String hash = String.valueOf(uri.hashCode());
+            if (cache.containsKey(hash)) {
+                logStream.println("Cache hit for URI hash: " + hash);
+                File cachedFile = cache.get(hash);
                 sendCachedFile(clientOutput, cachedFile);
                 return;
             }
@@ -79,7 +86,7 @@ class ProxyClientHandler implements Runnable {
                 serverOutput.println("Host: " + host);
                 serverOutput.println();
 
-                File cacheFile = new File(cacheDirectory + "/cache_" + uri.hashCode());
+                File cacheFile = new File(cacheDirectory + "/cache_" + hash + ".txt");
                 try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(cacheFile))) {
                     String serverResponseLine;
                     while ((serverResponseLine = serverInput.readLine()) != null) {
@@ -87,29 +94,26 @@ class ProxyClientHandler implements Runnable {
                         clientOutput.writeBytes(serverResponseLine + "\r\n");
                     }
                 }
-                addToCache(uri, cacheFile);
+                addToCache(hash, cacheFile);
             } catch (IOException e) {
                 sendError(clientOutput, 404, "Not Found");
             }
-
         } catch (IOException e) {
             logStream.println("Error: " + e.getMessage());
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (IOException e) {
-                logStream.println("Error closing client connection: " + e.getMessage());
-            }
         }
     }
 
-    private void addToCache(String uri, File file) {
+    private void addToCache(String hash, File file) {
         if (cache.size() >= cacheSize) {
             String oldestKey = cache.keySet().iterator().next();
-            cache.remove(oldestKey);
+            File oldestFile = cache.remove(oldestKey);
+            if (oldestFile.exists()) {
+                oldestFile.delete();
+                logStream.println("Deleted expired cache file: " + oldestFile.getName());
+            }
         }
-        cache.put(uri, file);
-        logStream.println("Cached URI: " + uri);
+        cache.put(hash, file);
+        logStream.println("Cached URI: " + hash);
     }
 
     private void sendCachedFile(DataOutputStream output, File file) throws IOException {

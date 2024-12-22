@@ -23,6 +23,7 @@ public class ProxyServer implements Runnable {
         this.logStream = logStream;
         this.cacheSize = cacheSize;
         ensureCacheDirectory();
+        loadExistingCache();
     }
 
     private void ensureCacheDirectory() {
@@ -31,6 +32,19 @@ public class ProxyServer implements Runnable {
             dir.mkdirs();
             logStream.println("Cache directory created at: " + cacheDirectory);
         }
+    }
+
+    private void loadExistingCache() {
+        File dir = new File(cacheDirectory);
+        File[] files = dir.listFiles((d, name) -> name.startsWith("cache_") && name.endsWith(".txt"));
+        if (files != null) {
+            for (File file : files) {
+                String key = file.getName().replace("cache_", "").replace(".txt", "");
+                cache.put(key, file);
+                logStream.println("Loaded cached file: " + file.getName());
+            }
+        }
+        logStream.println("Cache initialized with " + cache.size() + " files.");
     }
 
     @Override
