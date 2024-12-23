@@ -104,7 +104,7 @@ public class HttpClientHandler implements Runnable {
     private String generateHtml(int size) {
         StringBuilder html = new StringBuilder();
         html.append("<html><head><title>I am " + size + " bytes long</title></head><body>");
-        int contentSize = size - html.length();
+        int contentSize = size - 14;
         while (html.length() < contentSize) {
             html.append("a"); // Add filler content
         }
