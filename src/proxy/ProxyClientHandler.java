@@ -57,16 +57,18 @@ class ProxyClientHandler implements Runnable {
                 path = "/" + path;
             }
 
-            int size;
-            try {
-                size = Integer.parseInt(path.substring(1));
-                if (size > MAX_URI_SIZE) {
-                    sendError(clientOutput, 414, "Request-URI Too Long");
+            if(host.contains("localhost")) {
+                int size;
+                try {
+                    size = Integer.parseInt(path.substring(1));
+                    if (size > MAX_URI_SIZE) {
+                        sendError(clientOutput, 414, "Request-URI Too Long");
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    sendError(clientOutput, 400, "Bad Request");
                     return;
                 }
-            } catch (NumberFormatException e) {
-                sendError(clientOutput, 400, "Bad Request");
-                return;
             }
 
             String hash = String.valueOf(uri.hashCode());
