@@ -40,6 +40,7 @@ public class App {
         Thread serverThread = new Thread(server);
         serverThread.start();
 
+        // Start the proxy server
         ProxyServer proxy = new ProxyServer(8888, logStream, cacheSize);
         Thread proxyThread = new Thread(proxy);
         proxyThread.start();

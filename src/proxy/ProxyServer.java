@@ -26,6 +26,7 @@ public class ProxyServer implements Runnable {
         loadExistingCache();
     }
 
+    // If cache directory does not exist, create it
     private void ensureCacheDirectory() {
         File dir = new File(cacheDirectory);
         if (!dir.exists()) {
@@ -34,6 +35,7 @@ public class ProxyServer implements Runnable {
         }
     }
 
+    // Load existing cache files into memory, the cache files are stored and retrieved according to the hash of the URL
     private void loadExistingCache() {
         File dir = new File(cacheDirectory);
         File[] files = dir.listFiles((d, name) -> name.startsWith("cache_") && name.endsWith(".txt"));
@@ -50,12 +52,13 @@ public class ProxyServer implements Runnable {
     @Override
     public void run() {
         logStream.println("Starting Proxy server on port " + portNumber);
-
+        // Start the server and listen for incoming connections
         try (ServerSocket newServer = new ServerSocket(portNumber)) {
             this.serverSocket = newServer;
             isRunning = true;
 
             while (isRunning) {
+                // Accept incoming connections and create a new client handler on a new thread for each connection
                 ProxyClientHandler client = new ProxyClientHandler(serverSocket.accept(), logStream, cache, cacheSize, cacheDirectory);
                 Thread clientThread = new Thread(client);
                 clientThread.start();
